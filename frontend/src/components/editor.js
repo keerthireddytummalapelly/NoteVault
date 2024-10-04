@@ -10,6 +10,7 @@ const Editor = () => {
   const [note, setNote] = useState('');
   const [newCategory, setNewCategory] = useState(''); // To create a new category
   const [isModalOpen, setIsModalOpen] = useState(false); // Manage modal state
+  const [predictedText, setPredictedText] = useState(''); // For storing OpenAI predictions
   const navigate = useNavigate();
 
   // Fetch categories on component mount
@@ -80,6 +81,7 @@ const Editor = () => {
     setTitle('');
     setCategory('');
     setNote('');
+    setPredictedText('');
   };
 
   // Handle saving the note
@@ -117,6 +119,25 @@ const Editor = () => {
       } catch (error) {
         console.error('Error deleting note:', error);
       }
+    }
+  };
+
+  // Get text prediction using OpenAI
+  const handleGetPrediction = async () => {
+    try {
+      const response = await apiCallWithToken('http://localhost:8000/text-prediction/', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: note }), // Send the current note content to OpenAI
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPredictedText(data.predicted_text); // Store the predicted text
+      } else {
+        console.error('Failed to get prediction');
+      }
+    } catch (error) {
+      console.error('Error during prediction:', error);
     }
   };
 
@@ -210,8 +231,24 @@ const Editor = () => {
           />
         </div>
 
+        {/* Predicted Text */}
+        {predictedText && (
+          <div className="mb-4">
+            <label className="block text-gray-400 text-sm mb-2">Predicted Text</label>
+            <div className="w-full p-2 bg-gray-700 border border-gray-600 rounded">
+              {predictedText}
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-between space-x-4">
+          <button
+            onClick={handleGetPrediction}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded"
+          >
+            Get Prediction
+          </button>
           <button
             onClick={handleSave}
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
@@ -255,3 +292,4 @@ const Editor = () => {
 };
 
 export default Editor;
+

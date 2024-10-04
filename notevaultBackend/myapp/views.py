@@ -7,6 +7,8 @@ from .models import Category, Note
 from .serializers import CategorySerializer, NoteSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+import openai
+import os
 
 # Register User
 @api_view(['POST'])
@@ -142,3 +144,28 @@ def delete_note(request, note_id):
 
     note.delete()
     return Response({'message': 'Note deleted successfully'}, status=status.HTTP_200_OK)
+
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+@api_view(['POST'])
+def text_prediction(request):
+    try:
+        prompt = request.data.get('prompt')
+
+        # Make a request to OpenAI API
+        response = openai.Completion.create(
+            engine="text-davinci-003",  # You can use any GPT engine available
+            prompt=prompt,
+            max_tokens=150,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
+
+        # Get the predicted text from OpenAI response
+        predicted_text = response.choices[0].text.strip()
+
+        return Response({'predicted_text': predicted_text}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

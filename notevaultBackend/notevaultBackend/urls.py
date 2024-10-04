@@ -8,6 +8,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('categories/', views.get_categories, name='get_categories'),
     path('categories/create/', views.create_category, name='create_category'),
+    path('text-prediction/', views.text_prediction, name='text_prediction'), # Text prediction
     path('notes/', views.get_notes, name='get_notes'),              # GET all notes
     path('notes/create/', views.create_note, name='create_note'),    # POST create note
     path('notes/category/<int:category_id>/', views.get_notes_by_category, name='notes_by_category'), # GET a note from specific category

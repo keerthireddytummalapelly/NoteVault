@@ -8,6 +8,7 @@ NoteVault is a full-stack application designed for creating, managing, and categ
 2. Create, update, delete notes
 3. Categorize notes
 4. Pin/Unpin notes for easy access
+5. OpenAI text prediction
 
 ### Technologies Used
 Frontend:
