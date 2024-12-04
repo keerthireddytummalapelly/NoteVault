@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const Signup = () => {
-  const [username, setUserName] = useState('');
+const ForgotPassword = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [newPassword, setNewPassword] = useState('');
+  const [reTypePassword, setReTypePassword] = useState('');
+
   const [tooltipContent, setTooltipContent] = useState([
     "- Password is required.",
     "- Password must be at least 8 characters long.",
@@ -23,7 +23,7 @@ const Signup = () => {
   ]);
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPasswordValid, setIsPasswordValid] = useState(true);
-  const [tooltipClass, setTooltipClass] = useState('text-white'); // Default to white text color for tooltip
+  const [tooltipClass, setTooltipClass] = useState('text-white');
 
   const validatePassword = (password) => {
     const minLength = 8;
@@ -74,7 +74,7 @@ const Signup = () => {
 
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
-    setPassword(newPassword);
+    setNewPassword(newPassword);
     const unsatisfiedRules = validatePassword(newPassword);
     if (unsatisfiedRules.length > 0) {
       setShowTooltip(true);
@@ -93,7 +93,7 @@ const Signup = () => {
   };
 
   const handlePasswordBlur = () => {
-    const unsatisfiedRules = validatePassword(password);
+    const unsatisfiedRules = validatePassword(newPassword);
     if (unsatisfiedRules.length > 0) {
       setTooltipClass('text-red-500');
       setIsPasswordValid(false);
@@ -102,114 +102,91 @@ const Signup = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleResetNewPassword = async (e) => {
     e.preventDefault();
     
     if (!isPasswordValid) {
       toast.error('Password requirements are not met');
       return;
     }
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
 
+    if (newPassword !== reTypePassword) {
+        toast.error('Passwords do not match');
+        return;
+    }
     try {
-      const response = await fetch('http://52.7.128.221:8000/register/', {
+      const response = await fetch('http://52.7.128.221:8000/reset-new-password/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password, first_name: firstName, last_name: lastName }),
+        body: JSON.stringify({
+            username,
+            email,
+            new_password: newPassword,
+            re_type_password: reTypePassword,
+        }),
       });
-
-      const data = await response.json();
+      
       if (response.ok) {
-        localStorage.setItem('username', username);
-        localStorage.setItem('firstName', firstName);
-        localStorage.setItem('token', data.access);
-        localStorage.setItem('refresh', data.refresh);
-        toast.success('Signup successful! Redirecting...');
-        setTimeout(() => navigate('/home'), 1000);
+          toast.success('Password reset successfully. You will be redirected to login page.');
+          setTimeout(() => {
+              navigate('/login');
+          }, 3000);
       } else {
-        toast.error(data.message || 'Signup failed! Try a different username');
+          const data = await response.json();
+          toast.error(data.error || 'Failed to reset password');
       }
-    } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+    } catch (err) {
+        console.error('Error resetting password:', err);
+        toast.error('An error occurred');
     }
   };
-
+  
   return (
-    <div className="min-h-screen bg-black">
-      <div className="flex items-center justify-center mb-10 pt-[60px]">
-        <img src="/Logo.png" alt="Logo" className="w-40 h-28 mr-4 -ml-16" />
-        <div>
-          <h1 className="text-5xl text-white font-bold text-center mb-3">NOTE VAULT</h1>
-          <h3 className="text-white text-xl font-semibold">Secure your thoughts, unlock your potential</h3>
+    <div className="min-h-screen bg-black flex items-center  p-4">
+      <div className="flex flex-col lg:flex-row gap-24">
+        <div className="flex flex-col items-center mt-5 lg:ml-48">
+          <img src="/fp1.png" alt="Logo" className="w-60 h-48 sm:w-80 sm:h-64 mb-4" />
+          <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
+            Forgot your password? <br />No worries, create a new one and get back on track!
+          </h3>
         </div>
-      </div>
-
-      <div className="bg-black flex items-center justify-center">
-        <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
-        <div className="bg-black p-8 rounded-md w-full max-w-md border-2 border-white">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4 flex items-center">
-              <label className="text-white text-sm font-semibold w-1/3">First Name</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-2/3 p-2 ml-[36px] bg-white text-black rounded outline-none"
-                placeholder="Enter your first name"
-                required
-              />
-            </div>
-            <div className="mb-4 flex items-center">
-              <label className="text-white text-sm font-semibold w-1/3">Last Name</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-2/3 p-2 ml-[36px] bg-white text-black rounded outline-none"
-                placeholder="Enter your last name"
-                required
-              />
-            </div>
-            <div className="mb-4 flex items-center">
-              <label className="text-white text-sm font-semibold w-1/3">Username</label>
+        <div className="bg-black p-8 sm:p-10 rounded-md max-w-md w-full border-2 border-white">
+          {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+          <form onSubmit={handleResetNewPassword}>
+            <div className="mb-4 flex flex-col sm:flex-row items-center">
+              <label className="text-white text-sm font-semibold w-full sm:w-1/3 mr-8">Username</label>
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-2/3 p-2 ml-[36px] bg-white text-black rounded outline-none"
-                placeholder="Enter your username"
+                onChange={(e) => setUsername(e.target.value)}
+                className="p-2 w-full sm:w-2/3 bg-white border border-black text-black rounded"
+                placeholder="Enter username"
                 required
               />
             </div>
-
-            <div className="mb-4 flex items-center relative">
-              <label className="text-white text-sm font-semibold w-1/3">Email</label>
+            <div className="mb-4 flex flex-col sm:flex-row items-center">
+              <label className="text-white text-sm font-semibold w-full sm:w-1/3 mr-8">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-2/3 p-2 ml-[36px] bg-white text-black rounded outline-none`}
-                placeholder="Enter your email"
+                className="p-2 w-full sm:w-2/3 bg-white border border-black text-black rounded"
+                placeholder="Enter email"
                 required
               />
             </div>
-
-            <div className="mb-4 flex items-center relative">
-              <label className="text-white text-sm font-semibold w-1/3">Password</label>
+            <div className="mb-4 flex flex-col sm:flex-row items-center relative">
+              <label className="text-white text-sm w-full sm:w-1/3 font-semibold mr-8">New Password</label>
               <input
                 type="password"
-                value={password}
+                value={newPassword}
                 onChange={handlePasswordChange}
                 onClick={handlePasswordClick}
                 onBlur={handlePasswordBlur}
-                className="w-2/3 p-2 ml-[36px] bg-white text-black rounded outline-none"
-                placeholder="Enter your password"
-                required
+                className="p-2 w-full sm:w-2/3 bg-white border border-black text-black rounded"
+                placeholder="Enter new password"
               />
               {showTooltip && (
                 <div className="absolute left-full top-0 ml-2 p-2 bg-gray-900 rounded shadow-lg min-w-[330px] sm:block hidden">
@@ -221,16 +198,14 @@ const Signup = () => {
                 </div>
               )}
             </div>
-            
-            <div className="mb-4 flex items-center">
-              <label className="text-white text-sm font-semibold w-1/3">Confirm Password</label>
+            <div className="mb-4 flex flex-col sm:flex-row items-center">
+              <label className="text-white text-sm font-semibold w-full sm:w-1/3 mr-8">Re-type Password</label>
               <input
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-2/3 p-2 ml-[36px] bg-white text-black rounded outline-none"
-                placeholder="Confirm your password"
-                required
+                value={reTypePassword}
+                onChange={(e) => setReTypePassword(e.target.value)}
+                className="p-2 w-full sm:w-2/3 bg-white border border-black text-black rounded"
+                placeholder="Re-type new password"
               />
             </div>
             <div className="m-6">
@@ -238,21 +213,15 @@ const Signup = () => {
                 type="submit"
                 className="w-full bg-white text-black py-2 rounded font-semibold hover:bg-gray-300"
               >
-                Register
+                Reset
               </button>
-            </div>
-            <div className="text-center text-white">
-              Existing user?{' '}
-              <Link to="/login" className="text-white hover:underline">
-                Login
-              </Link>
             </div>
           </form>
         </div>
       </div>
+      <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
     </div>
   );
 };
 
-export default Signup;
-
+export default ForgotPassword;

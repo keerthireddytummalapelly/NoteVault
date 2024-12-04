@@ -12,12 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import openai
 
 load_dotenv()
-
-# Load OpenAI API key from the .env file
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,7 +28,7 @@ SECRET_KEY = 'django-insecure-8#2=w42+inh774ok%oag4(g5ei%1ms8j-iowp2n!yiu@kmmg)_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -81,6 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'notevaultBackend.wsgi.application'
 
+KEY = os.getenv('API_KEY')
 
 # Database
 
@@ -90,16 +87,31 @@ DATABASES = {
         'NAME': 'NoteVault',
         'CLIENT': {
             'host': os.getenv('DATABASE_URL'),
-            'ssl': True,  # Enable SSL if needed
+            'ssl': True,  
         }
     }
 }
 
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React app URL
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
 ]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+]
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
